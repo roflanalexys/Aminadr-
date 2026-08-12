@@ -131,16 +131,18 @@
             box-shadow: 0 4px 15px rgba(255, 126, 179, 0.2);
         }
         
-        /* Убегающая кнопка */
+        /* Убегающая кнопка - сделана непрозрачной и более заметной */
         #escape-btn {
-            background: rgba(255, 255, 255, 0.4);
-            color: #888;
-            border: 1px dashed #ccc;
-            box-shadow: none;
-            font-size: 14px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #c2185b;
+            border: 2px dashed #ff7eb3;
+            box-shadow: 0 4px 15px rgba(255, 126, 179, 0.3);
+            font-size: 16px;
+            font-weight: bold;
             padding: 12px 20px;
-            transition: top 0.2s ease, left 0.2s ease;
+            transition: top 0.25s ease-out, left 0.25s ease-out; /* Плавный полет */
             max-width: 250px;
+            z-index: 9999; /* Чтобы кнопка летала поверх вообще всего */
         }
 
         .time-input-container {
@@ -177,20 +179,22 @@
         @keyframes spin { 100% { transform: rotate(360deg); } }
         .spinner { animation: spin 3s linear infinite; display: inline-block; }
 
-        /* Таймер */
+        /* Романтичный таймер */
         .timer-box {
-            background: rgba(255,255,255,0.6);
+            background: rgba(255,255,255,0.7);
             border-radius: 15px;
             padding: 15px;
             margin: 15px 0;
             border: 1px solid rgba(255, 126, 179, 0.5);
+            box-shadow: 0 4px 15px rgba(255, 126, 179, 0.1);
         }
         #countdown {
-            font-family: 'Segoe UI', Tahoma, monospace;
-            font-size: 22px;
+            font-family: 'Caveat', cursive; /* Теперь таймер тоже романтичным шрифтом */
+            font-size: 32px;
             font-weight: 700;
             color: #d81b60;
             margin-top: 5px;
+            letter-spacing: 1px;
         }
 
         /* Секретное письмо */
@@ -209,7 +213,6 @@
             animation: fadeIn 1.5s ease-in-out;
             color: #5c184c;
         }
-        /* Стилизация скроллбара для письма, если оно длинное */
         .page::-webkit-scrollbar {
             width: 6px;
         }
@@ -233,7 +236,7 @@
         <button onclick="track('Начала открытку'); startLoading()">Далее ✨</button>
     </div>
 
-    <!-- Экран загрузки (Фишка 3) -->
+    <!-- Экран загрузки -->
     <div id="page-loading" class="page">
         <span class="emoji spinner">⚙️</span>
         <p id="loading-text" style="font-size: 26px; margin-top: 15px;">Анализируем идеальный сценарий...</p>
@@ -294,7 +297,7 @@
         
         <!-- Таймер обратного отсчета -->
         <div class="timer-box" id="timer-container">
-            <p style="font-size: 20px; margin-bottom: 0; font-family: 'Segoe UI', sans-serif;">До твоего Дня рождения осталось:</p>
+            <p style="font-size: 26px; margin-bottom: 0; font-family: 'Caveat', cursive; color: #5c184c;">До твоего Дня рождения осталось:</p>
             <div id="countdown">Загрузка таймера...</div>
         </div>
 
@@ -365,22 +368,31 @@
             }, 3200);
         }
 
+        // ЛОГИКА УБЕГАЮЩЕЙ КНОПКИ
         const escapeBtn = document.getElementById('escape-btn');
         escapeBtn.addEventListener('touchstart', runAway, {passive: false});
         escapeBtn.addEventListener('mouseover', runAway);
 
         function runAway(e) {
-            if(e.type === 'touchstart') e.preventDefault(); 
-            track('Пыталась нажать "Передумала"'); 
-            const container = document.getElementById('page3');
-            const cRect = container.getBoundingClientRect();
-            if (escapeBtn.style.position !== 'absolute') {
-                escapeBtn.style.position = 'absolute';
+            if(e.type === 'touchstart') {
+                e.preventDefault(); 
             }
-            const maxX = cRect.width - escapeBtn.offsetWidth - 40;
-            const maxY = cRect.height - escapeBtn.offsetHeight - 40;
-            const randomX = 20 + Math.random() * maxX;
-            const randomY = 20 + Math.random() * maxY;
+            track('Пыталась нажать "Передумала"'); 
+            
+            // Делаем позицию fixed, чтобы кнопка летала по всему экрану, а не внутри окошка
+            if (escapeBtn.style.position !== 'fixed') {
+                escapeBtn.style.position = 'fixed';
+                escapeBtn.style.margin = '0';
+            }
+            
+            // Считаем размер всего окна браузера (экрана телефона)
+            const maxX = window.innerWidth - escapeBtn.offsetWidth - 20;
+            const maxY = window.innerHeight - escapeBtn.offsetHeight - 20;
+            
+            // Выбираем случайную координату в этих пределах
+            const randomX = 10 + Math.random() * maxX;
+            const randomY = 10 + Math.random() * maxY;
+            
             escapeBtn.style.left = randomX + 'px';
             escapeBtn.style.top = randomY + 'px';
         }
@@ -429,11 +441,8 @@
                 // Если время вышло (наступило 16 августа 00:00)
                 if (distance < 0) {
                     clearInterval(updateTimer);
-                    // Скрываем блок с таймером
                     document.getElementById("timer-container").style.display = "none";
-                    // Меняем заголовок
                     document.getElementById("final-title").innerHTML = "С Днём Рождения, потрясающая миледи! ❤️";
-                    // Показываем секретное письмо
                     document.getElementById("secret-letter").style.display = "block";
                     return;
                 }
