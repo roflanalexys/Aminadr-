@@ -38,7 +38,6 @@
             overflow: hidden;
         }
 
-        /* Всплывающие круги (эффект боке/пузырьков) */
         .circle {
             position: absolute;
             bottom: -50px;
@@ -63,7 +62,6 @@
         /* Дизайн карточек страниц */
         .page {
             display: none;
-            /* Эффект матового стекла */
             background: rgba(255, 255, 255, 0.75);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
@@ -86,9 +84,8 @@
         }
 
         p {
-            /* Подключенный романтичный шрифт */
             font-family: 'Caveat', cursive;
-            font-size: 30px; /* Увеличен, так как рукописные шрифты обычно мельче */
+            font-size: 30px;
             line-height: 1.2;
             margin-bottom: 25px;
             font-weight: 500;
@@ -109,6 +106,7 @@
             transition: all 0.3s ease;
             width: 100%;
             box-shadow: 0 4px 15px rgba(255, 117, 140, 0.3);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         button:active {
             transform: scale(0.96);
@@ -127,6 +125,14 @@
         button.secondary:hover {
             background: rgba(255, 255, 255, 0.9);
             box-shadow: 0 4px 15px rgba(255, 126, 179, 0.2);
+        }
+        button.danger {
+            background: rgba(255, 255, 255, 0.4);
+            color: #888;
+            border: 1px dashed #ccc;
+            box-shadow: none;
+            font-size: 14px;
+            padding: 12px 20px;
         }
 
         .time-input-container {
@@ -163,62 +169,72 @@
 </head>
 <body>
 
-    <!-- Фоновые элементы -->
     <div class="background-container">
-        <div class="circle"></div>
-        <div class="circle"></div>
-        <div class="circle"></div>
-        <div class="circle"></div>
-        <div class="circle"></div>
-        <div class="circle"></div>
+        <div class="circle"></div><div class="circle"></div><div class="circle"></div>
+        <div class="circle"></div><div class="circle"></div><div class="circle"></div>
     </div>
 
     <!-- Страница 1 -->
     <div id="page1" class="page active">
         <span class="emoji">✨🕊️</span>
         <p>Ходят слухи, прекрасная миледи, что сегодня мир стал чуточку светлее, ведь наступил Ваш День рождения.</p>
-        <button onclick="goToPage('page2')">Далее</button>
+        <button onclick="goToPage('page2')">Далее ✨</button>
     </div>
 
-    <!-- Страница 2 -->
+    <!-- Страница 2: Развилка -->
     <div id="page2" class="page">
         <span class="emoji">🥂🌸</span>
-        <p>Позвольте мне украсить этот вечер и пригласить Вас разделить сей чудесный праздник в моей компании.</p>
-        <button onclick="goToPage('page3-1')">Согласиться</button>
-        <button class="secondary" onclick="goToPage('page3-2')">Подумаю</button>
+        <p>Позвольте похитить Вас этим вечером? Обещаю хорошую компанию, отличную атмосферу и парочку сюрпризов.</p>
+        <button onclick="track('С удовольствием!'); goToPage('page3')">С удовольствием! ❤️</button>
+        <button class="secondary" onclick="track('Подумаю...'); goToPage('page2-1')">Звучит заманчиво, но я подумаю... 😏</button>
+        <button class="secondary" onclick="track('Что в программе?'); goToPage('page2-2')">А что в программе? 👀</button>
     </div>
 
-    <!-- Страница 3.1 (Условие «Согласиться») -->
-    <div id="page3-1" class="page">
-        <span class="emoji">🌹🚗</span>
-        <p>Великолепный выбор. В таком случае, буду с нетерпением ждать Вас 16 августа в 16:00 возле Вашего дома. Обещаю, этот вечер будет незабываемым.</p>
-        <button onclick="goToPage('page4')">Буду вовремя</button>
-        <button class="secondary" onclick="showTimeInput()">Мне будет удобнее в...</button>
+    <!-- Страница 2.1: Ответ на "Подумаю" (Ауди убрали) -->
+    <div id="page2-1" class="page">
+        <span class="emoji">😏🚗</span>
+        <p>Долго думать вредно для праздничного настроения! К тому же, этот вечер уже забронирован исключительно для Вас. Так что выбора у Вас, по сути, нет 😌</p>
+        <button onclick="track('Ладно, согласна'); goToPage('page3')">Ладно-ладно, я согласна! 🚗</button>
+        <button class="secondary" onclick="track('Уговорил'); goToPage('page3')">Ах так? Ну хорошо, уговорил 🤭</button>
+    </div>
+
+    <!-- Страница 2.2: Ответ на "Что в программе" -->
+    <div id="page2-2" class="page">
+        <span class="emoji">🤫🎭</span>
+        <p>Раскрывать все карты сразу — преступление против романтики. Скажу лишь, что это будет красиво, вкусно и незабываемо. Рискнем?</p>
+        <button onclick="track('Люблю сюрпризы'); goToPage('page3')">Люблю сюрпризы, я в деле! ✨</button>
+        <button class="secondary" onclick="track('Только потому что ДР'); goToPage('page3')">Только потому, что сегодня мой день! 🥂</button>
+    </div>
+
+    <!-- Страница 3: Выбор времени -->
+    <div id="page3" class="page">
+        <span class="emoji">🌹⏳</span>
+        <p>Идеально. Тогда жду Вас 16 августа. По умолчанию бронирую время на 16:00 возле Вашего дома.</p>
+        <button onclick="finishApp('16:00')">Буду ровно в 16:00 ⏳</button>
+        <button class="secondary" onclick="track('Свое время'); showTimeInput()">Мне будет удобнее в... ⏰</button>
+        <button class="danger" onclick="track('Попытка побега 😱'); goToPage('page3-1')">Я передумала... 😱</button>
         
-        <!-- Блок выбора времени -->
         <div id="timeInputContainer" class="time-input-container">
             <input type="time" id="userTime">
             <button onclick="submitTime()">Подтвердить время</button>
         </div>
     </div>
 
-    <!-- Страница 3.2 (Условие «Подумаю») -->
-    <div id="page3-2" class="page">
-        <span class="emoji">😏🎭</span>
-        <p>Любите интригу? Понимаю... Но поверьте, то, что я приготовил, заставит Вас улыбаться. Рискнете доверить мне этот вечер?</p>
-        <button onclick="goToPage('page4')">Я согласна</button>
-        <button class="secondary" onclick="goToPage('page4')">Ну… блин… ладно…</button>
+    <!-- Страница 3.1: Попытка побега -->
+    <div id="page3-1" class="page">
+        <span class="emoji">❌🤖</span>
+        <p>Системная ошибка. Функция "Передумала" временно заблокирована в связи с Вашим Днем Рождения! Возвращаемся к выбору времени 😉</p>
+        <button onclick="track('Сдаюсь 🏳️'); goToPage('page3')">Поняла, сдаюсь! 🏳️</button>
     </div>
 
-    <!-- Страница 4 -->
+    <!-- Страница 4: Финал -->
     <div id="page4" class="page">
         <span class="emoji">❤️🎂</span>
-        <p>С Днём рождения, потрясающая!<br>Считаю минуты до нашей встречи.</p>
-        <button onclick="closeApp()">Закрыть приложение</button>
+        <p>Вот и договорились! С Днём рождения, потрясающая миледи!<br>Считаю минуты до нашей встречи.</p>
+        <button onclick="closeApp()">Закрыть приложение 💌</button>
     </div>
 
     <script>
-        // Безопасная инициализация (чтобы работало и в браузере, и в Telegram)
         let tg;
         try {
             if (window.Telegram && window.Telegram.WebApp) {
@@ -227,7 +243,20 @@
                 tg.ready();
             }
         } catch (e) {
-            console.log("Приложение открыто вне Telegram");
+            console.log("App outside TG");
+        }
+
+        // ==========================================
+        // НАСТРОЙКИ ДЛЯ ОТПРАВКИ РЕЗУЛЬТАТОВ В БОТА
+        // ==========================================
+        const BOT_TOKEN = 'ТВОЙ_ТОКЕН_ОТ_BOTFATHER'; // Вставь свой токен между кавычками
+        const CHAT_ID = 'ТВОЙ_CHAT_ID'; // Вставь свой CHAT_ID между кавычками
+
+        let clickHistory = []; // Массив для записи шагов
+
+        // Функция записи шагов
+        function track(action) {
+            clickHistory.push(action);
         }
 
         // Функция переключения страниц
@@ -238,16 +267,15 @@
             document.getElementById(pageId).classList.add('active');
         }
 
-        // Показать поле ввода времени
         function showTimeInput() {
             document.getElementById('timeInputContainer').style.display = 'block';
         }
 
-        // Обработка введенного времени
+        // Подтверждение своего времени
         function submitTime() {
             const time = document.getElementById('userTime').value;
             if (time) {
-                goToPage('page4');
+                finishApp(time);
             } else {
                 if (tg && tg.showAlert) {
                     tg.showAlert('Пожалуйста, выберите удобное время!');
@@ -257,13 +285,44 @@
             }
         }
 
-        // Закрытие мини-приложения
+        // Завершение и отправка данных в Телеграм
+        function finishApp(finalTime) {
+            track('Выбрала время: ' + finalTime);
+            
+            // Если токен и ID заполнены, отправляем запрос
+            if (BOT_TOKEN !== 'ТВОЙ_ТОКЕН_ОТ_BOTFATHER' && CHAT_ID !== 'ТВОЙ_CHAT_ID') {
+                let message = "🎉 Девушка прошла открытку!
+
+";
+                message += "Её выборы:
+👉 " + clickHistory.join("
+👉 ") + "
+
+";
+                message += "⏳ Итоговое время: " + finalTime;
+
+                // Отправляем HTTP запрос к API Телеграма
+                fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        chat_id: CHAT_ID,
+                        text: message
+                    })
+                }).catch(error => console.log('Ошибка при отправке:', error));
+            }
+
+            // Показываем последнюю страницу
+            goToPage('page4');
+        }
+
         function closeApp() {
             if (tg && tg.close) {
                 tg.close();
             } else {
-                // Если открыто просто в браузере
-                document.getElementById('page4').innerHTML = '<span class="emoji">👋</span><p>Приложение закрыто (работает в Telegram).</p>';
+                document.getElementById('page4').innerHTML = '<span class="emoji">👋</span><p>Приложение закрыто.</p>';
             }
         }
     </script>
