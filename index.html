@@ -133,16 +133,16 @@
         
         /* Убегающая кнопка - сделана непрозрачной и более заметной */
         #escape-btn {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 1);
             color: #c2185b;
             border: 2px dashed #ff7eb3;
-            box-shadow: 0 4px 15px rgba(255, 126, 179, 0.3);
+            box-shadow: 0 8px 25px rgba(255, 126, 179, 0.6);
             font-size: 16px;
             font-weight: bold;
             padding: 12px 20px;
             transition: top 0.25s ease-out, left 0.25s ease-out; /* Плавный полет */
             max-width: 250px;
-            z-index: 9999; /* Чтобы кнопка летала поверх вообще всего */
+            z-index: 99999; /* Максимальный приоритет */
         }
 
         .time-input-container {
@@ -189,7 +189,7 @@
             box-shadow: 0 4px 15px rgba(255, 126, 179, 0.1);
         }
         #countdown {
-            font-family: 'Caveat', cursive; /* Теперь таймер тоже романтичным шрифтом */
+            font-family: 'Caveat', cursive;
             font-size: 32px;
             font-weight: 700;
             color: #d81b60;
@@ -368,7 +368,7 @@
             }, 3200);
         }
 
-        // ЛОГИКА УБЕГАЮЩЕЙ КНОПКИ
+        // ЛОГИКА УБЕГАЮЩЕЙ КНОПКИ (ИСПРАВЛЕНА)
         const escapeBtn = document.getElementById('escape-btn');
         escapeBtn.addEventListener('touchstart', runAway, {passive: false});
         escapeBtn.addEventListener('mouseover', runAway);
@@ -379,17 +379,19 @@
             }
             track('Пыталась нажать "Передумала"'); 
             
-            // Делаем позицию fixed, чтобы кнопка летала по всему экрану, а не внутри окошка
-            if (escapeBtn.style.position !== 'fixed') {
+            // Если кнопка все еще внутри карточки page3, выносим ее прямо в body,
+            // чтобы она могла свободно летать по всему экрану и не обрезалась карточкой!
+            if (escapeBtn.parentElement.id === 'page3') {
                 escapeBtn.style.position = 'fixed';
                 escapeBtn.style.margin = '0';
+                document.body.appendChild(escapeBtn);
             }
             
-            // Считаем размер всего окна браузера (экрана телефона)
+            // Считаем реальный размер всего экрана телефона
             const maxX = window.innerWidth - escapeBtn.offsetWidth - 20;
             const maxY = window.innerHeight - escapeBtn.offsetHeight - 20;
             
-            // Выбираем случайную координату в этих пределах
+            // Выбираем случайную координату по всему экрану
             const randomX = 10 + Math.random() * maxX;
             const randomY = 10 + Math.random() * maxY;
             
@@ -424,6 +426,11 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ chat_id: CHAT_ID, text: message })
                 }).catch(error => console.log('Ошибка при отправке:', error));
+            }
+
+            // Прячем убегающую кнопку, если она была вынесена в body
+            if (escapeBtn.parentElement.tagName === 'BODY') {
+                escapeBtn.style.display = 'none';
             }
 
             goToPage('page4');
