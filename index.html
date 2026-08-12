@@ -131,7 +131,7 @@
             box-shadow: 0 4px 15px rgba(255, 126, 179, 0.2);
         }
         
-        /* Убегающая кнопка - сделана непрозрачной и более заметной */
+        /* Убегающая кнопка - слой поверх вообще всего в мире */
         #escape-btn {
             background: rgba(255, 255, 255, 1);
             color: #c2185b;
@@ -140,9 +140,10 @@
             font-size: 16px;
             font-weight: bold;
             padding: 12px 20px;
-            transition: top 0.25s ease-out, left 0.25s ease-out; /* Плавный полет */
+            transition: top 0.25s ease-out, left 0.25s ease-out; 
             max-width: 250px;
-            z-index: 99999; /* Максимальный приоритет */
+            z-index: 999999; /* Увеличенный z-index */
+            transform: translateZ(1px); /* Фикс для багов отрисовки на айфонах */
         }
 
         .time-input-container {
@@ -275,7 +276,7 @@
         <button class="secondary" onclick="track('Свое время'); showTimeInput()">Мне будет удобнее в... ⏰</button>
         
         <!-- Убегающая кнопка -->
-        <button id="escape-btn" onclick="goToPage('page3-1')">Я передумала... 😱</button>
+        <button id="escape-btn" onclick="handleEscapeClick()">Я передумала... 😱</button>
         
         <div id="timeInputContainer" class="time-input-container">
             <input type="time" id="userTime">
@@ -333,6 +334,7 @@
         const CHAT_ID = 'ТВОЙ_CHAT_ID'; 
 
         let clickHistory = [];
+        let escapeActivated = false; // Флаг для первого нажатия
 
         function track(action) {
             clickHistory.push(action);
@@ -368,32 +370,47 @@
             }, 3200);
         }
 
-        // ЛОГИКА УБЕГАЮЩЕЙ КНОПКИ (ИСПРАВЛЕНА)
+        // ЛОГИКА УБЕГАЮЩЕЙ КНОПКИ
         const escapeBtn = document.getElementById('escape-btn');
+        
+        // Обработка самого первого клика по кнопке
+        function handleEscapeClick() {
+            if (!escapeActivated) {
+                track('Нажала "Передумала" первый раз');
+                escapeActivated = true; // Активируем режим убегания на будущее
+                goToPage('page3-1'); // Показываем шуточную ошибку
+            }
+        }
+
         escapeBtn.addEventListener('touchstart', runAway, {passive: false});
         escapeBtn.addEventListener('mouseover', runAway);
 
         function runAway(e) {
+            // Если это самое первое прикосновение - ничего не делаем, даем нажать на кнопку!
+            if (!escapeActivated) return;
+
             if(e.type === 'touchstart') {
                 e.preventDefault(); 
             }
-            track('Пыталась нажать "Передумала"'); 
+            track('Пыталась поймать убегающую кнопку'); 
             
-            // Если кнопка все еще внутри карточки page3, выносим ее прямо в body,
-            // чтобы она могла свободно летать по всему экрану и не обрезалась карточкой!
             if (escapeBtn.parentElement.id === 'page3') {
                 escapeBtn.style.position = 'fixed';
                 escapeBtn.style.margin = '0';
+                escapeBtn.style.zIndex = '999999';
                 document.body.appendChild(escapeBtn);
             }
             
-            // Считаем реальный размер всего экрана телефона
-            const maxX = window.innerWidth - escapeBtn.offsetWidth - 20;
-            const maxY = window.innerHeight - escapeBtn.offsetHeight - 20;
+            // Используем надежные способы получить размер экрана даже на iOS
+            const clientWidth = window.innerWidth || document.documentElement.clientWidth;
+            const clientHeight = window.innerHeight || document.documentElement.clientHeight;
             
-            // Выбираем случайную координату по всему экрану
-            const randomX = 10 + Math.random() * maxX;
-            const randomY = 10 + Math.random() * maxY;
+            const maxX = clientWidth - escapeBtn.offsetWidth - 20;
+            const maxY = clientHeight - escapeBtn.offsetHeight - 20;
+            
+            // Ограничиваем, чтобы кнопка 100% не улетела за экран
+            const randomX = Math.max(10, Math.random() * maxX);
+            const randomY = Math.max(10, Math.random() * maxY);
             
             escapeBtn.style.left = randomX + 'px';
             escapeBtn.style.top = randomY + 'px';
