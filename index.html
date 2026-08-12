@@ -62,6 +62,7 @@
         /* Дизайн карточек страниц */
         .page {
             display: none;
+            position: relative;
             background: rgba(255, 255, 255, 0.75);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
@@ -73,6 +74,8 @@
             box-sizing: border-box;
             animation: fadeIn 0.7s cubic-bezier(0.25, 0.8, 0.25, 1);
             margin: 20px;
+            max-height: 90vh;
+            overflow-y: auto;
         }
         .page.active {
             display: block;
@@ -107,6 +110,7 @@
             width: 100%;
             box-shadow: 0 4px 15px rgba(255, 117, 140, 0.3);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            z-index: 10;
         }
         button:active {
             transform: scale(0.96);
@@ -126,13 +130,17 @@
             background: rgba(255, 255, 255, 0.9);
             box-shadow: 0 4px 15px rgba(255, 126, 179, 0.2);
         }
-        button.danger {
+        
+        /* Убегающая кнопка */
+        #escape-btn {
             background: rgba(255, 255, 255, 0.4);
             color: #888;
             border: 1px dashed #ccc;
             box-shadow: none;
             font-size: 14px;
             padding: 12px 20px;
+            transition: top 0.2s ease, left 0.2s ease;
+            max-width: 250px;
         }
 
         .time-input-container {
@@ -165,6 +173,50 @@
             margin-bottom: 10px;
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
         }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .spinner { animation: spin 3s linear infinite; display: inline-block; }
+
+        /* Таймер */
+        .timer-box {
+            background: rgba(255,255,255,0.6);
+            border-radius: 15px;
+            padding: 15px;
+            margin: 15px 0;
+            border: 1px solid rgba(255, 126, 179, 0.5);
+        }
+        #countdown {
+            font-family: 'Segoe UI', Tahoma, monospace;
+            font-size: 22px;
+            font-weight: 700;
+            color: #d81b60;
+            margin-top: 5px;
+        }
+
+        /* Секретное письмо */
+        .secret-letter {
+            display: none;
+            margin: 15px 0;
+            font-family: 'Caveat', cursive;
+            font-size: 24px;
+            line-height: 1.3;
+            text-align: left;
+            background: rgba(255, 255, 255, 0.85);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px dashed #ff7eb3;
+            box-shadow: 0 4px 15px rgba(255, 126, 179, 0.2);
+            animation: fadeIn 1.5s ease-in-out;
+            color: #5c184c;
+        }
+        /* Стилизация скроллбара для письма, если оно длинное */
+        .page::-webkit-scrollbar {
+            width: 6px;
+        }
+        .page::-webkit-scrollbar-thumb {
+            background-color: #ff7eb3;
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body>
@@ -177,20 +229,26 @@
     <!-- Страница 1 -->
     <div id="page1" class="page active">
         <span class="emoji">✨🕊️</span>
-        <p>Ходят слухи, прекрасная миледи, что сегодня мир стал чуточку светлее, ведь наступил Ваш День рождения.</p>
-        <button onclick="goToPage('page2')">Далее ✨</button>
+        <p>Ходят слухи, прекрасная миледи, что Ваш день рождения уже совсем близко...</p>
+        <button onclick="track('Начала открытку'); startLoading()">Далее ✨</button>
+    </div>
+
+    <!-- Экран загрузки (Фишка 3) -->
+    <div id="page-loading" class="page">
+        <span class="emoji spinner">⚙️</span>
+        <p id="loading-text" style="font-size: 26px; margin-top: 15px;">Анализируем идеальный сценарий...</p>
     </div>
 
     <!-- Страница 2: Развилка -->
     <div id="page2" class="page">
         <span class="emoji">🥂🌸</span>
-        <p>Позвольте похитить Вас этим вечером? Обещаю хорошую компанию, отличную атмосферу и парочку сюрпризов.</p>
+        <p>Позвольте похитить Вас в этот особенный вечер? Обещаю хорошую компанию, отличную атмосферу и парочку сюрпризов.</p>
         <button onclick="track('С удовольствием!'); goToPage('page3')">С удовольствием! ❤️</button>
         <button class="secondary" onclick="track('Подумаю...'); goToPage('page2-1')">Звучит заманчиво, но я подумаю... 😏</button>
         <button class="secondary" onclick="track('Что в программе?'); goToPage('page2-2')">А что в программе? 👀</button>
     </div>
 
-    <!-- Страница 2.1: Ответ на "Подумаю" (Ауди убрали) -->
+    <!-- Страница 2.1: Ответ на "Подумаю" -->
     <div id="page2-1" class="page">
         <span class="emoji">😏🚗</span>
         <p>Долго думать вредно для праздничного настроения! К тому же, этот вечер уже забронирован исключительно для Вас. Так что выбора у Вас, по сути, нет 😌</p>
@@ -203,16 +261,18 @@
         <span class="emoji">🤫🎭</span>
         <p>Раскрывать все карты сразу — преступление против романтики. Скажу лишь, что это будет красиво, вкусно и незабываемо. Рискнем?</p>
         <button onclick="track('Люблю сюрпризы'); goToPage('page3')">Люблю сюрпризы, я в деле! ✨</button>
-        <button class="secondary" onclick="track('Только потому что ДР'); goToPage('page3')">Только потому, что сегодня мой день! 🥂</button>
+        <button class="secondary" onclick="track('Только потому что праздник'); goToPage('page3')">Только потому, что это мой праздник! 🥂</button>
     </div>
 
     <!-- Страница 3: Выбор времени -->
-    <div id="page3" class="page">
+    <div id="page3" class="page" style="min-height: 400px;">
         <span class="emoji">🌹⏳</span>
         <p>Идеально. Тогда жду Вас 16 августа. По умолчанию бронирую время на 16:00 возле Вашего дома.</p>
         <button onclick="finishApp('16:00')">Буду ровно в 16:00 ⏳</button>
         <button class="secondary" onclick="track('Свое время'); showTimeInput()">Мне будет удобнее в... ⏰</button>
-        <button class="danger" onclick="track('Попытка побега 😱'); goToPage('page3-1')">Я передумала... 😱</button>
+        
+        <!-- Убегающая кнопка -->
+        <button id="escape-btn" onclick="goToPage('page3-1')">Я передумала... 😱</button>
         
         <div id="timeInputContainer" class="time-input-container">
             <input type="time" id="userTime">
@@ -223,14 +283,31 @@
     <!-- Страница 3.1: Попытка побега -->
     <div id="page3-1" class="page">
         <span class="emoji">❌🤖</span>
-        <p>Системная ошибка. Функция "Передумала" временно заблокирована в связи с Вашим Днем Рождения! Возвращаемся к выбору времени 😉</p>
+        <p>Системная ошибка. Функция "Передумала" временно заблокирована! Возвращаемся к выбору времени 😉</p>
         <button onclick="track('Сдаюсь 🏳️'); goToPage('page3')">Поняла, сдаюсь! 🏳️</button>
     </div>
 
-    <!-- Страница 4: Финал -->
+    <!-- Страница 4: Финал с таймером и секретным письмом -->
     <div id="page4" class="page">
         <span class="emoji">❤️🎂</span>
-        <p>Вот и договорились! С Днём рождения, потрясающая миледи!<br>Считаю минуты до нашей встречи.</p>
+        <p id="final-title">Вот и договорились! С наступающим Днём рождения, потрясающая миледи!</p>
+        
+        <!-- Таймер обратного отсчета -->
+        <div class="timer-box" id="timer-container">
+            <p style="font-size: 20px; margin-bottom: 0; font-family: 'Segoe UI', sans-serif;">До твоего Дня рождения осталось:</p>
+            <div id="countdown">Загрузка таймера...</div>
+        </div>
+
+        <!-- Секретное письмо, которое появится в 00:00 -->
+        <div id="secret-letter" class="secret-letter">
+            Родная моя, любимая,<br><br>
+            Вот часы и пробили полночь. На календаре 16 августа, и этот долгожданный день наконец-то наступил. День, когда мир вокруг стал чуточку светлее, добрее и прекраснее просто потому, что в нем появилась ты.<br><br>
+            Я пишу тебе в самые первые минуты твоего праздника, потому что хочу, чтобы ты знала главное: я тебя очень сильно люблю. Искренне, глубоко и всем сердцем. Ты — самое светлое, что есть в моей жизни, и я бесконечно счастлив, что ты у меня есть. Ты даже не представляешь, сколько радости, тепла и смысла ты приносишь в каждый мой день.<br><br>
+            Оставь все заботы, сомнения и тревоги в прошлом году. Сегодня — только твое время. Я хочу, чтобы ты улыбалась, чтобы твои глаза сияли от счастья, и обещаю сделать всё, чтобы предстоящий вечер стал для тебя идеальным.<br><br>
+            С Днём рождения, моя самая чудесная миледи.<br><br>
+            <span style="display: block; text-align: right; margin-top: 15px;"><i>Моя безумная, страстная, трепетная любовь.</i></span>
+        </div>
+
         <button onclick="closeApp()">Закрыть приложение 💌</button>
     </div>
 
@@ -249,17 +326,15 @@
         // ==========================================
         // НАСТРОЙКИ ДЛЯ ОТПРАВКИ РЕЗУЛЬТАТОВ В БОТА
         // ==========================================
-        const BOT_TOKEN = 'ТВОЙ_ТОКЕН_ОТ_BOTFATHER'; // Вставь свой токен между кавычками
-        const CHAT_ID = 'ТВОЙ_CHAT_ID'; // Вставь свой CHAT_ID между кавычками
+        const BOT_TOKEN = 'ТВОЙ_ТОКЕН_ОТ_BOTFATHER'; 
+        const CHAT_ID = 'ТВОЙ_CHAT_ID'; 
 
-        let clickHistory = []; // Массив для записи шагов
+        let clickHistory = [];
 
-        // Функция записи шагов
         function track(action) {
             clickHistory.push(action);
         }
 
-        // Функция переключения страниц
         function goToPage(pageId) {
             document.querySelectorAll('.page').forEach(page => {
                 page.classList.remove('active');
@@ -267,11 +342,53 @@
             document.getElementById(pageId).classList.add('active');
         }
 
+        function startLoading() {
+            goToPage('page-loading');
+            const texts = [
+                "Анализируем идеальный сценарий...",
+                "Подбираем цветы... 🌷",
+                "Настраиваем атмосферу... ✨",
+                "Всё готово! ❤️"
+            ];
+            let i = 1;
+            const textEl = document.getElementById('loading-text');
+            const interval = setInterval(() => {
+                if(i < texts.length) {
+                    textEl.innerText = texts[i];
+                    i++;
+                }
+            }, 800); 
+
+            setTimeout(() => {
+                clearInterval(interval);
+                goToPage('page2'); 
+            }, 3200);
+        }
+
+        const escapeBtn = document.getElementById('escape-btn');
+        escapeBtn.addEventListener('touchstart', runAway, {passive: false});
+        escapeBtn.addEventListener('mouseover', runAway);
+
+        function runAway(e) {
+            if(e.type === 'touchstart') e.preventDefault(); 
+            track('Пыталась нажать "Передумала"'); 
+            const container = document.getElementById('page3');
+            const cRect = container.getBoundingClientRect();
+            if (escapeBtn.style.position !== 'absolute') {
+                escapeBtn.style.position = 'absolute';
+            }
+            const maxX = cRect.width - escapeBtn.offsetWidth - 40;
+            const maxY = cRect.height - escapeBtn.offsetHeight - 40;
+            const randomX = 20 + Math.random() * maxX;
+            const randomY = 20 + Math.random() * maxY;
+            escapeBtn.style.left = randomX + 'px';
+            escapeBtn.style.top = randomY + 'px';
+        }
+
         function showTimeInput() {
             document.getElementById('timeInputContainer').style.display = 'block';
         }
 
-        // Подтверждение своего времени
         function submitTime() {
             const time = document.getElementById('userTime').value;
             if (time) {
@@ -285,37 +402,53 @@
             }
         }
 
-        // Завершение и отправка данных в Телеграм
         function finishApp(finalTime) {
             track('Выбрала время: ' + finalTime);
             
-            // Если токен и ID заполнены, отправляем запрос
             if (BOT_TOKEN !== 'ТВОЙ_ТОКЕН_ОТ_BOTFATHER' && CHAT_ID !== 'ТВОЙ_CHAT_ID') {
-                let message = "🎉 Девушка прошла открытку!
-
-";
-                message += "Её выборы:
-👉 " + clickHistory.join("
-👉 ") + "
-
-";
-                message += "⏳ Итоговое время: " + finalTime;
-
-                // Отправляем HTTP запрос к API Телеграма
+                let message = `🎉 Девушка прошла открытку!\n\nЕё выборы:\n👉 ${clickHistory.join('\n👉 ')}\n\n⏳ Итоговое время: ${finalTime}`;
                 fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        chat_id: CHAT_ID,
-                        text: message
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: CHAT_ID, text: message })
                 }).catch(error => console.log('Ошибка при отправке:', error));
             }
 
-            // Показываем последнюю страницу
             goToPage('page4');
+            startTimer();
+        }
+
+        function startTimer() {
+            const targetDate = new Date('2026-08-16T00:00:00').getTime();
+            const timerElement = document.getElementById("countdown");
+            
+            const updateTimer = setInterval(() => {
+                const now = new Date().getTime();
+                const distance = targetDate - now;
+                
+                // Если время вышло (наступило 16 августа 00:00)
+                if (distance < 0) {
+                    clearInterval(updateTimer);
+                    // Скрываем блок с таймером
+                    document.getElementById("timer-container").style.display = "none";
+                    // Меняем заголовок
+                    document.getElementById("final-title").innerHTML = "С Днём Рождения, потрясающая миледи! ❤️";
+                    // Показываем секретное письмо
+                    document.getElementById("secret-letter").style.display = "block";
+                    return;
+                }
+                
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hrs = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const mins = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const secs = Math.floor((distance % (1000 * 60)) / 1000);
+                
+                let timeText = "";
+                if(days > 0) timeText += days + " дн. ";
+                timeText += `${hrs} ч. ${mins} мин. ${secs} сек.`;
+                
+                timerElement.innerHTML = timeText;
+            }, 1000);
         }
 
         function closeApp() {
