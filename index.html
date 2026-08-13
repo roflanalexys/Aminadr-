@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>С Днём Рождения!</title>
-    <!-- Подключаем API Telegram Mini Apps -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Подключаем романтичный рукописный шрифт Caveat из Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&display=swap" rel="stylesheet">
@@ -26,7 +24,6 @@
             overflow-x: hidden;
         }
 
-        /* Анимированный фон с градиентом и частицами */
         .background-container {
             position: fixed;
             top: 0;
@@ -59,7 +56,6 @@
             100% { transform: translateY(-120vh) scale(1.2); opacity: 0; }
         }
 
-        /* Дизайн карточек страниц */
         .page {
             display: none;
             position: relative;
@@ -131,7 +127,6 @@
             box-shadow: 0 4px 15px rgba(255, 126, 179, 0.2);
         }
         
-        /* Убегающая кнопка - слой поверх вообще всего в мире */
         #escape-btn {
             background: rgba(255, 255, 255, 1);
             color: #c2185b;
@@ -142,8 +137,8 @@
             padding: 12px 20px;
             transition: top 0.25s ease-out, left 0.25s ease-out; 
             max-width: 250px;
-            z-index: 999999; /* Увеличенный z-index */
-            transform: translateZ(1px); /* Фикс для багов отрисовки на айфонах */
+            z-index: 999999;
+            transform: translateZ(1px);
         }
 
         .time-input-container {
@@ -180,7 +175,6 @@
         @keyframes spin { 100% { transform: rotate(360deg); } }
         .spinner { animation: spin 3s linear infinite; display: inline-block; }
 
-        /* Романтичный таймер */
         .timer-box {
             background: rgba(255,255,255,0.7);
             border-radius: 15px;
@@ -198,7 +192,6 @@
             letter-spacing: 1px;
         }
 
-        /* Секретное письмо */
         .secret-letter {
             display: none;
             margin: 15px 0;
@@ -312,10 +305,29 @@
             <span style="display: block; text-align: right; margin-top: 15px;"><i>Моя безумная, страстная, трепетная любовь.</i></span>
         </div>
 
+        <!-- Блок тайного послания -->
+        <div id="secret-message-block" style="margin-top: 25px;">
+            <button id="show-message-btn" class="secondary" onclick="showMessageInput()">Оставить тайное послание 🕊️</button>
+            
+            <div id="message-input-container" style="display: none; margin-top: 15px; animation: fadeIn 0.4s ease-in-out;">
+                <p style="font-size: 20px; margin-bottom: 10px;">До нашей встречи еще есть время. Если хочешь что-то передать своему организатору — напиши это здесь.</p>
+                <textarea id="secret-text" rows="3" placeholder="Напиши свои догадки или вопросы..." style="width: 100%; padding: 12px; border-radius: 12px; border: 2px dashed #ff7eb3; background: rgba(255, 255, 255, 0.8); color: #5c184c; font-family: inherit; font-size: 16px; outline: none; box-sizing: border-box; resize: none;"></textarea>
+                <button onclick="sendSecretMessage()" style="margin-top: 10px;">Отправить 🕵️‍♀️</button>
+            </div>
+            
+            <p id="message-success" style="display: none; font-size: 22px; color: #d81b60; margin-top: 15px; font-weight: bold; font-family: 'Caveat', cursive;">Послание отправлено в неизвестность... ✨</p>
+        </div>
+
         <button onclick="closeApp()">Закрыть приложение 💌</button>
     </div>
 
     <script>
+        // ==========================================
+        // НАСТРОЙКИ ДЛЯ ОТПРАВКИ РЕЗУЛЬТАТОВ В БОТА
+        // ==========================================
+        const BOT_TOKEN = 'ТВОЙ_ТОКЕН_ОТ_BOTFATHER'; 
+        const CHAT_ID = 'ТВОЙ_CHAT_ID'; 
+
         let tg;
         try {
             if (window.Telegram && window.Telegram.WebApp) {
@@ -327,14 +339,8 @@
             console.log("App outside TG");
         }
 
-        // ==========================================
-        // НАСТРОЙКИ ДЛЯ ОТПРАВКИ РЕЗУЛЬТАТОВ В БОТА
-        // ==========================================
-    const BOT_TOKEN = '8551522771:AAFmPJ6G1sWwcciKsr9ywLrDUg54vZ26epQ';
-        const CHAT_ID = '701782189';
-
         let clickHistory = [];
-        let escapeActivated = false; // Флаг для первого нажатия
+        let escapeActivated = false; 
 
         function track(action) {
             clickHistory.push(action);
@@ -370,15 +376,13 @@
             }, 3200);
         }
 
-        // ЛОГИКА УБЕГАЮЩЕЙ КНОПКИ
         const escapeBtn = document.getElementById('escape-btn');
         
-        // Обработка самого первого клика по кнопке
         function handleEscapeClick() {
             if (!escapeActivated) {
                 track('Нажала "Передумала" первый раз');
-                escapeActivated = true; // Активируем режим убегания на будущее
-                goToPage('page3-1'); // Показываем шуточную ошибку
+                escapeActivated = true; 
+                goToPage('page3-1'); 
             }
         }
 
@@ -386,7 +390,6 @@
         escapeBtn.addEventListener('mouseover', runAway);
 
         function runAway(e) {
-            // Если это самое первое прикосновение - ничего не делаем, даем нажать на кнопку!
             if (!escapeActivated) return;
 
             if(e.type === 'touchstart') {
@@ -401,14 +404,12 @@
                 document.body.appendChild(escapeBtn);
             }
             
-            // Используем надежные способы получить размер экрана даже на iOS
             const clientWidth = window.innerWidth || document.documentElement.clientWidth;
             const clientHeight = window.innerHeight || document.documentElement.clientHeight;
             
             const maxX = clientWidth - escapeBtn.offsetWidth - 20;
             const maxY = clientHeight - escapeBtn.offsetHeight - 20;
             
-            // Ограничиваем, чтобы кнопка 100% не улетела за экран
             const randomX = Math.max(10, Math.random() * maxX);
             const randomY = Math.max(10, Math.random() * maxY);
             
@@ -445,7 +446,6 @@
                 }).catch(error => console.log('Ошибка при отправке:', error));
             }
 
-            // Прячем убегающую кнопку, если она была вынесена в body
             if (escapeBtn.parentElement.tagName === 'BODY') {
                 escapeBtn.style.display = 'none';
             }
@@ -462,7 +462,6 @@
                 const now = new Date().getTime();
                 const distance = targetDate - now;
                 
-                // Если время вышло (наступило 16 августа 00:00)
                 if (distance < 0) {
                     clearInterval(updateTimer);
                     document.getElementById("timer-container").style.display = "none";
@@ -484,6 +483,37 @@
             }, 1000);
         }
 
+        // --- ЛОГИКА ТАЙНОГО ПОСЛАНИЯ ---
+        function showMessageInput() {
+            document.getElementById('show-message-btn').style.display = 'none';
+            document.getElementById('message-input-container').style.display = 'block';
+        }
+
+        function sendSecretMessage() {
+            const text = document.getElementById('secret-text').value.trim();
+            if (!text) {
+                if (tg && tg.showAlert) {
+                    tg.showAlert('Поле пустое. Напиши хоть пару слов!');
+                } else {
+                    alert('Поле пустое. Напиши хоть пару слов!');
+                }
+                return;
+            }
+
+            if (BOT_TOKEN !== 'ТВОЙ_ТОКЕН_ОТ_BOTFATHER' && CHAT_ID !== 'ТВОЙ_CHAT_ID') {
+                let message = `💌 НОВОЕ ТАЙНОЕ ПОСЛАНИЕ!\n\nОна пишет: «${text}»`;
+                fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: CHAT_ID, text: message })
+                }).catch(error => console.log('Ошибка при отправке:', error));
+            }
+
+            document.getElementById('message-input-container').style.display = 'none';
+            document.getElementById('message-success').style.display = 'block';
+        }
+        // -------------------------------
+
         function closeApp() {
             if (tg && tg.close) {
                 tg.close();
@@ -492,6 +522,5 @@
             }
         }
     </script>
-        
 </body>
 </html>
